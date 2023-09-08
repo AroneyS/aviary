@@ -399,7 +399,8 @@ rule semibin:
         min(config["max_threads"], 16)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60 + 48*60*(attempt-1),
+        runtime = lambda wildcards, attempt: 24*60 + 96*60*(attempt-1),
+        skip_time = lambda wildcards, attempt: "false" if attempt < 4 else "skip",
     conda:
         "envs/semibin.yaml"
     log:
@@ -407,11 +408,17 @@ rule semibin:
     benchmark:
         "benchmarks/semibin.benchmark.txt"
     shell:
-        "rm -rf data/semibin_bins/; "
         "mkdir -p data/semibin_bins/output_recluster_bins/; "
-        "SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins --environment {params.semibin_model} -p {threads} --self-supervised > {log} 2>&1 && "
-        "touch {output.done} || SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins -p {threads} --self-supervised > {log} 2>&1 "
-        "&& touch {output.done} || touch {output.done}"
+    shell:
+        "rm -rf data/semibin_bins/; "
+        "if [ '{resources.skip_time}' = 'skip' ]; then "
+        "    mkdir -p data/semibin_bins; "
+        "    touch {output.done}; "
+        "else "
+        "    SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins --environment {params.semibin_model} -p {threads} --self-supervised > {log} 2>&1 && "
+        "    touch {output.done} || SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins -p {threads} --self-supervised > {log} 2>&1 "
+        "    && touch {output.done} || touch {output.done}; "
+        "fi"
 
 rule checkm_rosella:
     input:
