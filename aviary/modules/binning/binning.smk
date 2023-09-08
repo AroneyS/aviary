@@ -408,9 +408,8 @@ rule semibin:
     benchmark:
         "benchmarks/semibin.benchmark.txt"
     shell:
-        "mkdir -p data/semibin_bins/output_recluster_bins/; "
-    shell:
         "rm -rf data/semibin_bins/; "
+        "mkdir -p data/semibin_bins/output_recluster_bins/; "
         "if [ '{resources.skip_time}' = 'skip' ]; then "
         "    mkdir -p data/semibin_bins; "
         "    touch {output.done}; "
