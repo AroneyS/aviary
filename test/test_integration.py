@@ -142,7 +142,7 @@ class Tests(unittest.TestCase):
         self.assertFalse(os.path.isfile(f"{output_dir}/aviary_out/data/final_contigs.fasta"))
 
     def test_short_read_recovery_queue_submission(self):
-        output_dir = os.path.join("example", "test_short_read_recovery_queue_submission")
+        output_dir = os.path.join("example", "test_short_read_recovery_queue_submission_skip_time")
         self.setup_output_dir(output_dir)
 
         cmd = (
@@ -152,6 +152,10 @@ class Tests(unittest.TestCase):
             f"-1 {data}/wgsim.1.fq.gz "
             f"-2 {data}/wgsim.2.fq.gz "
             f"--conda-prefix {path_to_conda} "
+            f"--workflow recover_mags_no_singlem "
+            f"--skip-abundances "
+            f"--skip-binners concoct rosella vamb maxbin "
+            f"--refinery-max-iterations 0 "
             f"-n 32 -t 32 "
             f"--snakemake-profile mqsub --cluster-retries 3 "
         )
