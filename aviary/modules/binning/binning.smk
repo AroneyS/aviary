@@ -176,7 +176,7 @@ rule vamb:
         min(config["max_threads"], 16)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60*attempt,
+        runtime = lambda wildcards, attempt: 48*60*attempt,
         gpus = 1 if config["request_gpu"] else 0
     output:
         "data/vamb_bins/done"
@@ -400,7 +400,7 @@ rule semibin:
         min(config["max_threads"], 16)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60 + 96*60*(attempt-1),
+        runtime = lambda wildcards, attempt: 48*60 + 96*60*(attempt-1),
         gpus = 1 if config["request_gpu"] else 0,
         skip_time = lambda wildcards, attempt: "false" if attempt < 4 else "skip",
     conda:
