@@ -37,6 +37,8 @@ onstart:
         sys.stderr.write("gtdbtk_folder does not point to a folder\n")
     if busco_folder != "none" and not os.path.exists(busco_folder):
         sys.stderr.write("busco_folder does not point to a folder\n")
+    if singlem_metapackage != "none" and not os.path.exists(singlem_metapackage):
+        sys.stderr.write("singlem_metapackage does not point to a folder\n")
 
 if config['fasta'] == 'none':
     config['fasta'] = 'assembly/final_contigs.fasta'
@@ -425,7 +427,7 @@ rule checkm_rosella:
     input:
         done = ancient("data/rosella_bins/done")
     params:
-        pplacer_threads = config["pplacer_threads"],
+        pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         checkm2_db_path = config["checkm2_db_folder"],
         bin_folder = "data/rosella_bins/",
         extension = "fna",
@@ -450,7 +452,7 @@ rule checkm_metabat2:
     input:
         done = ancient("data/metabat_bins_2/done")
     params:
-        pplacer_threads = config["pplacer_threads"],
+        pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         checkm2_db_path = config["checkm2_db_folder"],
         bin_folder = "data/metabat_bins_2/",
         extension = "fa",
@@ -475,7 +477,7 @@ rule checkm_semibin:
     input:
         done = ancient("data/semibin_bins/done")
     params:
-        pplacer_threads = config["pplacer_threads"],
+        pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         checkm2_db_path = config["checkm2_db_folder"],
         bin_folder = "data/semibin_bins/output_recluster_bins/",
         extension = "fa",
@@ -513,7 +515,7 @@ rule refine_rosella:
         output_folder = "data/rosella_refined/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
-        pplacer_threads = config["pplacer_threads"],
+        pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
         final_refining = False
     threads:
@@ -550,7 +552,7 @@ rule refine_metabat2:
         output_folder = "data/metabat2_refined/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
-        pplacer_threads = config["pplacer_threads"],
+        pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
         final_refining = False
     log:
@@ -582,7 +584,7 @@ rule refine_semibin:
         output_folder = "data/semibin_refined/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
-        pplacer_threads = config["pplacer_threads"],
+        pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
         final_refining = False
     log:
@@ -701,7 +703,7 @@ rule refine_dastool:
         output_folder = "data/refined_bins/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
-        pplacer_threads = config["pplacer_threads"],
+        pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
         final_refining = True
     log:
@@ -799,13 +801,14 @@ rule singlem_appraise:
     log:
         "data/singlem_out/singlem_log.txt"
     shell:
-        "singlem pipe --threads {threads} --genome-fasta-file bins/final_bins/*.fna --otu-table data/singlem_out/genomes.otu_table.csv > {log} 2>&1; "
-        "singlem pipe --threads {threads} --genome-fasta-file {params.fasta} --otu-table data/singlem_out/assembly.otu_table.csv >> {log} 2>&1; "
+        # We use bash -c so that a non-zero exitstatus of the non-final commands doesn't cause the rule (and therefore aviary) to fail
+        "bash -c 'singlem pipe --threads {threads} --genome-fasta-file bins/final_bins/*.fna --otu-table data/singlem_out/genomes.otu_table.csv && "
+        "singlem pipe --threads {threads} --genome-fasta-file {params.fasta} --otu-table data/singlem_out/assembly.otu_table.csv && "
         "singlem appraise --metagenome-otu-tables {input.metagenome} --genome-otu-tables data/singlem_out/genomes.otu_table.csv "
         "--assembly-otu-table data/singlem_out/assembly.otu_table.csv "
         "--plot data/singlem_out/singlem_appraise.svg --output-binned-otu-table data/singlem_out/binned.otu_table.csv "
-        "--output-unbinned-otu-table data/singlem_out/unbinned.otu_table.csv > data/singlem_out/singlem_appraisal.tsv 2>> {log} || "
-        "echo 'SingleM Errored, please check data/singlem_out/singlem_log.txt' && touch data/singlem_out/singlem_appraisal.tsv"
+        "--output-unbinned-otu-table data/singlem_out/unbinned.otu_table.csv > data/singlem_out/singlem_appraisal.tsv' 2> {log} || "
+        "echo 'SingleM Errored, please check data/singlem_out/singlem_log.txt'; touch data/singlem_out/singlem_appraisal.tsv"
 
 
 rule recover_mags:
