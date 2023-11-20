@@ -369,7 +369,7 @@ rule rosella:
         min_contig_size = config["min_contig_size"],
         min_bin_size = config["min_bin_size"]
     output:
-        # kmers = "data/rosella_bins/rosella_kmer_table.tsv",
+        # kmers = "data/rosella_bins/kmer_frequencies.tsv",
         done = "data/rosella_bins/done"
     conda:
         "envs/rosella.yaml"
@@ -384,8 +384,8 @@ rule rosella:
         "benchmarks/rosella.benchmark.txt"
     shell:
         "rm -rf data/rosella_bins/; "
-        "rosella recover -r {input.fasta} -i {input.coverage} -t {threads} -o data/rosella_bins "
-        "--min-contig-size {params.min_contig_size} --min-bin-size {params.min_bin_size} --n-neighbors 200 > {log} 2>&1 && "
+        "rosella recover -r {input.fasta} -C {input.coverage} -t {threads} -o data/rosella_bins "
+        "--min-contig-size {params.min_contig_size} --min-bin-size {params.min_bin_size} --n-neighbors 100 > {log} 2>&1 && "
         "touch {output.done} || touch {output.done}"
 
 
@@ -504,7 +504,7 @@ rule refine_rosella:
         rosella = ancient('data/rosella_bins/done'),
         coverage = ancient("data/coverm.cov"),
         fasta = ancient(config["fasta"]),
-        # kmers = "data/rosella_bins/rosella_kmer_table.tsv"
+        # kmers = "data/rosella_bins/kmer_frequencies.tsv"
     output:
         'data/rosella_refined/done'
     benchmark:
@@ -515,9 +515,11 @@ rule refine_rosella:
         output_folder = "data/rosella_refined/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
+        max_retries = config["refinery_max_retries"],
         pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
-        final_refining = False
+        final_refining = False,
+        bin_prefix = "rosella"
     threads:
         min(config["max_threads"], 16)
     resources:
@@ -536,7 +538,7 @@ rule refine_metabat2:
         rosella = ancient('data/metabat_bins_2/done'),
         coverage = ancient("data/coverm.cov"),
         fasta = ancient(config["fasta"]),
-        # kmers = "data/rosella_bins/rosella_kmer_table.tsv"
+        # kmers = "data/rosella_bins/kmer_frequencies.tsv"
     output:
         'data/metabat2_refined/done'
     threads:
@@ -552,9 +554,11 @@ rule refine_metabat2:
         output_folder = "data/metabat2_refined/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
+        max_retries = config["refinery_max_retries"],
         pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
-        final_refining = False
+        final_refining = False,
+        bin_prefix = "metabat2"
     log:
         "logs/refine_metabat2.log"
     conda:
@@ -568,7 +572,7 @@ rule refine_semibin:
         rosella = ancient('data/semibin_bins/done'),
         coverage = ancient("data/coverm.cov"),
         fasta = ancient(config["fasta"]),
-        # kmers = "data/rosella_bins/rosella_kmer_table.tsv"
+        # kmers = "data/rosella_bins/kmer_frequencies.tsv"
     threads:
         min(config["max_threads"], 16)
     resources:
@@ -584,9 +588,11 @@ rule refine_semibin:
         output_folder = "data/semibin_refined/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
+        max_retries = config["refinery_max_retries"],
         pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
-        final_refining = False
+        final_refining = False,
+        bin_prefix = "semibin2"
     log:
         "logs/refine_semibin.log"
     conda:
@@ -686,7 +692,7 @@ rule refine_dastool:
         das_tool = 'data/das_tool_bins_pre_refine/done',
         coverage = ancient("data/coverm.cov"),
         fasta = ancient(config["fasta"]),
-        # kmers = "data/rosella_bins/rosella_kmer_table.tsv"
+        # kmers = "data/rosella_bins/kmer_frequencies.tsv"
     threads:
         min(config["max_threads"], 16)
     resources:
@@ -703,9 +709,11 @@ rule refine_dastool:
         output_folder = "data/refined_bins/",
         min_bin_size = config["min_bin_size"],
         max_iterations = config["refinery_max_iterations"],
+        max_retries = config["refinery_max_retries"],
         pplacer_threads = lambda wildcards, threads: min(threads, config["pplacer_threads"]),
         max_contamination = 15,
-        final_refining = True
+        final_refining = True,
+        bin_prefix = "dastool"
     log:
         "logs/refine_dastool.log"
     conda:
