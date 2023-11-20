@@ -178,7 +178,7 @@ rule vamb:
         min(config["max_threads"], 16)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60*attempt,
+        runtime = lambda wildcards, attempt: 48*60*attempt,
         gpus = 1 if config["request_gpu"] else 0
     output:
         "data/vamb_bins/done"
@@ -248,13 +248,19 @@ rule metabat_spec:
     threads:
         min(config["max_threads"], 16)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60*attempt,
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024),
+        runtime = lambda wildcards, attempt: 24*60,
+        skip_time = lambda wildcards, attempt: "false" if attempt == 1 else "skip",
     shell:
         "rm -rf data/metabat_bins_spec; "
-        "metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --specific -i {input.fasta} "
-        "-a {input.coverage} -o data/metabat_bins_spec/binned_contigs > {log} 2>&1 && "
-        "touch {output[0]} || touch {output[0]}"
+        "if [ '{resources.skip_time}' = 'skip' ]; then "
+        "    mkdir -p data/metabat_bins_spec; "
+        "    touch {output[0]}; "
+        "else "
+        "    metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --specific -i {input.fasta} "
+        "    -a {input.coverage} -o data/metabat_bins_spec/binned_contigs > {log} 2>&1 && "
+        "    touch {output[0]} || touch {output[0]}; "
+        "fi"
 
 rule metabat_sspec:
     input:
@@ -274,13 +280,19 @@ rule metabat_sspec:
     threads:
         min(config["max_threads"], 16)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60*attempt,
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024),
+        runtime = lambda wildcards, attempt: 24*60,
+        skip_time = lambda wildcards, attempt: "false" if attempt == 1 else "skip",
     shell:
         "rm -rf data/metabat_bins_sspec; "
-        "metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --superspecific "
-        "-i {input.fasta} -a {input.coverage} -o data/metabat_bins_sspec/binned_contigs > {log} 2>&1 && "
-        "touch {output[0]} || touch {output[0]}"
+        "if [ '{resources.skip_time}' = 'skip' ]; then "
+        "    mkdir -p data/metabat_bins_sspec; "
+        "    touch {output[0]}; "
+        "else "
+        "    metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --superspecific "
+        "    -i {input.fasta} -a {input.coverage} -o data/metabat_bins_sspec/binned_contigs > {log} 2>&1 && "
+        "    touch {output[0]} || touch {output[0]}; "
+        "fi"
 
 rule metabat_sens:
     input:
@@ -300,13 +312,19 @@ rule metabat_sens:
     threads:
         min(config["max_threads"], 16)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60*attempt,
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024),
+        runtime = lambda wildcards, attempt: 24*60,
+        skip_time = lambda wildcards, attempt: "false" if attempt == 1 else "skip",
     shell:
         "rm -rf data/metabat_bins_sens; "
-        "metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --sensitive "
-        "-i {input.fasta} -a {input.coverage} -o data/metabat_bins_sens/binned_contigs > {log} 2>&1 && "
-        "touch {output[0]} || touch {output[0]}"
+        "if [ '{resources.skip_time}' = 'skip' ]; then "
+        "    mkdir -p data/metabat_bins_sens; "
+        "    touch {output[0]}; "
+        "else "
+        "    metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --sensitive "
+        "    -i {input.fasta} -a {input.coverage} -o data/metabat_bins_sens/binned_contigs > {log} 2>&1 && "
+        "    touch {output[0]} || touch {output[0]}; "
+        "fi"
 
 rule metabat_ssens:
     input:
@@ -326,13 +344,19 @@ rule metabat_ssens:
     threads:
         min(config["max_threads"], 16)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60*attempt,
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024),
+        runtime = lambda wildcards, attempt: 24*60,
+        skip_time = lambda wildcards, attempt: "false" if attempt == 1 else "skip",
     shell:
         "rm -rf data/metabat_bins_ssens; "
-        "metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --supersensitive "
-        "-i {input.fasta} -a {input.coverage} -o data/metabat_bins_ssens/binned_contigs > {log} 2>&1 && "
-        "touch {output[0]} || touch {output[0]}"
+        "if [ '{resources.skip_time}' = 'skip' ]; then "
+        "    mkdir -p data/metabat_bins_ssens; "
+        "    touch {output[0]}; "
+        "else "
+        "    metabat1 -t {threads} -m {params.min_contig_size} -s {params.min_bin_size} --seed 89 --supersensitive "
+        "    -i {input.fasta} -a {input.coverage} -o data/metabat_bins_ssens/binned_contigs > {log} 2>&1 && "
+        "    touch {output[0]} || touch {output[0]}; "
+        "fi"
 
 rule rosella:
     """
@@ -378,8 +402,9 @@ rule semibin:
         min(config["max_threads"], 16)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        runtime = lambda wildcards, attempt: 24*60 + 48*60*(attempt-1),
-        gpus = 1 if config["request_gpu"] else 0
+        runtime = lambda wildcards, attempt: 48*60 + 96*60*(attempt-1),
+        gpus = 1 if config["request_gpu"] else 0,
+        skip_time = lambda wildcards, attempt: "false" if attempt < 4 else "skip",
     conda:
         "envs/semibin.yaml"
     log:
@@ -389,9 +414,14 @@ rule semibin:
     shell:
         "rm -rf data/semibin_bins/; "
         "mkdir -p data/semibin_bins/output_recluster_bins/; "
-        "SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins --environment {params.semibin_model} -p {threads} --self-supervised > {log} 2>&1 && "
-        "touch {output.done} || SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins -p {threads} --self-supervised > {log} 2>&1 "
-        "&& touch {output.done} || touch {output.done}"
+        "if [ '{resources.skip_time}' = 'skip' ]; then "
+        "    mkdir -p data/semibin_bins; "
+        "    touch {output.done}; "
+        "else "
+        "    SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins --environment {params.semibin_model} -p {threads} --self-supervised > {log} 2>&1 && "
+        "    touch {output.done} || SemiBin single_easy_bin -i {input.fasta} -b data/binning_bams/*.bam -o data/semibin_bins -p {threads} --self-supervised > {log} 2>&1 "
+        "    && touch {output.done} || touch {output.done}; "
+        "fi"
 
 rule checkm_rosella:
     input:
@@ -624,9 +654,9 @@ rule das_tool:
         semibin_done = [] if "semibin" in config["skip_binners"] else "data/semibin_refined/done",
         vamb_done = [] if "vamb" in config["skip_binners"] else "data/vamb_bins/done",
     threads:
-        min(config["max_threads"], 64)
+        min(config["max_threads"], 16)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 512*1024*attempt),
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 12*60*attempt,
     output:
         das_tool_done = "data/das_tool_bins_pre_refine/done"

@@ -193,9 +193,9 @@ rule gtdbtk:
     conda:
         "../../envs/gtdbtk.yaml"
     threads:
-        min(config["max_threads"], 32)
+        min(config["max_threads"], 16)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 256*1024*attempt),
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 12*60*attempt,
     log:
         'logs/gtdbtk.log'
