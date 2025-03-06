@@ -1,6 +1,11 @@
 channels:
   - conda-forge
   - bioconda
+  - pytorch-lts
   - defaults
 dependencies:
   - SemiBin>=2.1.*
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cudatoolkit=10.2
