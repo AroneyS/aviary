@@ -1,7 +1,7 @@
 channels:
   - conda-forge
   - bioconda
-  - pytorch-lts
+  - pytorch
   - defaults
 dependencies:
   - samtools
@@ -9,9 +9,7 @@ dependencies:
   - numpy==1.24.2
   - pytorch==1.13.1
   - pycoverm==0.6.2
-  - torchvision
-  - torchaudio
-  - cudatoolkit=10.2
+  - pytorch-cuda
   - pip
   - git
   - pip:
