@@ -1,12 +1,7 @@
 channels:
   - conda-forge
   - bioconda
-  - pytorch-lts
   - defaults
 dependencies:
   - vamb==3.0.2
   - samtools
-  - pytorch
-  - torchvision
-  - torchaudio
-  - cudatoolkit=10.2
