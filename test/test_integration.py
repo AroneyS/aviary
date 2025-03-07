@@ -346,7 +346,7 @@ class Tests(unittest.TestCase):
             f"-o {output_dir}/aviary_out "
             f"-1 {data}/wgsim.1.fq.gz "
             f"-2 {data}/wgsim.2.fq.gz "
-            f"--skip-binners rosella metabat "
+            f"--skip-binners rosella metabat vamb "
             f"--extra-binners taxvamb "
             f"--request-gpu "
             f"--skip-qc "
