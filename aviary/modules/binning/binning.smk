@@ -242,8 +242,8 @@ rule metabuli_taxonomy:
     threads:
         config["max_threads"]
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 256*1024*attempt),
-        mem_gb = lambda wildcards, attempt: min(int(config["max_memory"]), 256*attempt),
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 512*1024*attempt),
+        mem_gb = lambda wildcards, attempt: min(int(config["max_memory"]), 512*attempt),
         runtime = lambda wildcards, attempt: 48*60*attempt,
     params:
         metabuli_db = config['metabuli_folder'],
