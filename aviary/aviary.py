@@ -19,7 +19,7 @@
 ###############################################################################
 import aviary.config.config as Config
 from aviary.modules.processor import Processor, process_batch
-from .__init__ import __version__, MEDAKA_MODELS, LONG_READ_TYPES
+from .__init__ import __version__, MEDAKA_MODELS, LONG_READ_TYPES, COVERAGE_JOB_STRATEGIES, COVERAGE_JOB_CUTOFF
 __author__ = "Rhys Newell"
 __copyright__ = "Copyright 2022"
 __credits__ = ["Rhys Newell"]
@@ -247,15 +247,6 @@ def main():
         const=True,
         dest='dryrun',
         default=False,
-    )
-
-    base_group.add_argument(
-        '--conda-frontend', '--conda_frontend',
-        help='Which conda frontend to use, mamba is faster but harder to debug. Switch this to conda \n'
-             'If experiencing problems installing environments',
-        dest='conda_frontend',
-        default="mamba",
-        choices=["conda", "mamba"],
     )
 
     base_group.add_argument(
@@ -568,6 +559,25 @@ def main():
         help='Minimum bin size in base pairs for a MAG',
         dest='min_bin_size',
         default=200000
+    )
+
+    binning_group.add_argument(
+        '--coverage-job-strategy', '--coverage_job_strategy',
+        help=f'When large numbers of samples are used for co-binning, it can be more computationally scalable to \n'
+             f'calculate coverage across multiple jobs. By default, if there are more than {COVERAGE_JOB_CUTOFF} samples,\n'
+             f'Aviary will calculate coverage in groups of N, where N is determined by `--coverage-samples-per-job`.\n'
+             f'Can be one of: "default" (as above), "never" and "always".',
+        dest='coverage_job_strategy',
+        choices=COVERAGE_JOB_STRATEGIES,
+        default=COVERAGE_JOB_STRATEGIES[0],
+    )
+
+    binning_group.add_argument(
+        '--coverage-samples-per-job', '--coverage_samples_per_job',
+        help='',
+        dest='coverage_samples_per_job',
+        type=int,
+        default=5,
     )
 
     binning_group.add_argument(
@@ -1294,7 +1304,6 @@ def main():
                                local_cores=int(args.local_cores),
                                dryrun=args.dryrun,
                                clean=args.clean,
-                               conda_frontend=args.conda_frontend,
                                snakemake_args=args.cmds,
                                rerun_triggers=args.rerun_triggers,
                                profile=args.snakemake_profile,
