@@ -1,6 +1,6 @@
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - SemiBin>=2.1.*
+  - semibin>=2.1.*
+  - pytorch-gpu=2.4.0

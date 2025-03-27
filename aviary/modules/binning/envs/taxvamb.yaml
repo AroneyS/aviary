@@ -1,4 +1,5 @@
 channels:
+  - pytorch
   - conda-forge
   - bioconda
   - defaults
@@ -8,6 +9,7 @@ dependencies:
   - numpy==1.24.2
   - pytorch==1.13.1
   - pycoverm==0.6.2
+  - pytorch-cuda
   - pip
   - git
   - pip:

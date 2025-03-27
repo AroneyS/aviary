@@ -1,4 +1,4 @@
-localrules: vamb_jgi_filter, vamb_skip, convert_metabuli, amber_checkm_output, finalise_stats, recover_mags, recover_mags_no_singlem
+localrules: vamb_skip, amber_checkm_output, recover_mags, recover_mags_no_singlem
 
 ruleorder: prepare_binning_files_gather > prepare_binning_files
 ruleorder: dereplicate_and_get_abundances_paired > dereplicate_and_get_abundances_interleaved
@@ -267,8 +267,10 @@ rule vamb_jgi_filter:
         done = ancient("data/coverm.cov")
     output:
         vamb_bams_done = "data/coverm.filt.cov"
-    threads:
-        config["max_threads"]
+    threads: 1
+    resources:
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 16*1024*attempt),
+        runtime = lambda wildcards, attempt: 24*60*attempt,
     params:
         min_contig_size = config['min_contig_size']
     run:
@@ -290,13 +292,11 @@ rule vamb:
     params:
         min_bin_size = config["min_bin_size"],
         min_contig_size = config["min_contig_size"],
-        vamb_threads = min(int(config["max_threads"]), 16) // 2 # vamb use double the threads you give it
     threads:
         config["max_threads"]
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 48*60*attempt,
-        gpus = 1 if config["request_gpu"] else 0
     output:
         "data/vamb_bins/done"
     conda:
@@ -307,7 +307,7 @@ rule vamb:
         "benchmarks/vamb.benchmark.txt"
     shell:
         "rm -rf data/vamb_bins/; "
-        "bash -c 'vamb --outdir data/vamb_bins/ -p {params.vamb_threads} --jgi {input.coverage} --fasta {input.fasta} "
+        "bash -c 'OPENBLAS_NUM_THREADS={threads} OMP_NUM_THREADS={threads} MKL_NUM_THREADS={threads} NUMEXPR_NUM_THREADS={threads} vamb --outdir data/vamb_bins/ -p {threads} --jgi {input.coverage} --fasta {input.fasta} "
         "--minfasta {params.min_bin_size} -m {params.min_contig_size} > {log} 2>&1 && touch {output[0]}' || "
         "touch {output[0]} && mkdir -p data/vamb_bins/bins"
 
@@ -381,8 +381,10 @@ rule convert_metabuli:
         filt_cov = ancient("data/coverm.filt.cov")
     output:
         "data/metabuli_taxonomy/taxonomy.tsv"
-    threads:
-        config["max_threads"]
+    threads: 1
+    resources:
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 16*1024*attempt),
+        runtime = lambda wildcards, attempt: 24*60*attempt,
     params:
         report = "data/metabuli_taxonomy/tax_report.tsv",
         classifications = "data/metabuli_taxonomy/tax_classifications.tsv",
@@ -399,7 +401,7 @@ rule taxvamb:
     params:
         min_bin_size = config["min_bin_size"],
         min_contig_size = config["min_contig_size"],
-        vamb_threads = min(int(config["max_threads"]), 16) // 2 # vamb use double the threads you give it
+        gpu_flag = "--cuda" if config["request_gpu"] else "",
     threads:
         config["max_threads"]
     resources:
@@ -416,9 +418,9 @@ rule taxvamb:
         "benchmarks/taxvamb.benchmark.txt"
     shell:
         "rm -rf data/taxvamb_bins/; "
-        "bash -c 'vamb bin taxvamb --outdir data/taxvamb_bins/ -p {params.vamb_threads} --fasta {input.fasta} "
+        "bash -c 'OPENBLAS_NUM_THREADS={threads} OMP_NUM_THREADS={threads} MKL_NUM_THREADS={threads} NUMEXPR_NUM_THREADS={threads} vamb bin taxvamb --outdir data/taxvamb_bins/ -p {threads} --fasta {input.fasta} "
         "--abundance_tsv {input.coverage} --taxonomy {input.taxonomy} "
-        "--minfasta {params.min_bin_size} -m {params.min_contig_size} > {log} 2>&1 && touch {output[0]}' || "
+        "--minfasta {params.min_bin_size} -m {params.min_contig_size} {params.gpu_flag} > {log} 2>&1 && touch {output[0]}' || "
         "touch {output[0]} && mkdir -p data/taxvamb_bins/bins"
 
 
@@ -664,7 +666,6 @@ rule checkm_rosella:
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 8*60*attempt,
-        gpus = 1 if config["request_gpu"] else 0
     log:
         "logs/checkm_rosella.log"
     script:
@@ -689,7 +690,6 @@ rule checkm_metabat2:
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 8*60*attempt,
-        gpus = 1 if config["request_gpu"] else 0
     log:
         "logs/checkm_metabat2.log"
     script:
@@ -714,7 +714,6 @@ rule checkm_semibin:
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 8*60*attempt,
-        gpus = 1 if config["request_gpu"] else 0
     log:
         "logs/checkm_semibin.log"
     script:
@@ -954,6 +953,10 @@ rule finalise_stats:
     output:
         bin_stats = "bins/bin_info.tsv",
         checkm_minimal = "bins/checkm_minimal.tsv"
+    threads: 1
+    resources:
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 16*1024*attempt),
+        runtime = lambda wildcards, attempt: 24*60*attempt,
     script:
         "scripts/finalise_stats.py"
 
