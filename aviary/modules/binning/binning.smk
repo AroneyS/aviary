@@ -293,9 +293,9 @@ rule vamb:
         min_bin_size = config["min_bin_size"],
         min_contig_size = config["min_contig_size"],
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 32*1024*attempt),
         runtime = lambda wildcards, attempt: 48*60*attempt,
     output:
         "data/vamb_bins/done"
@@ -403,9 +403,9 @@ rule taxvamb:
         min_contig_size = config["min_contig_size"],
         gpu_flag = "--cuda" if config["request_gpu"] else "",
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 32*1024*attempt),
         runtime = lambda wildcards, attempt: 48*60*attempt,
         gpus = 1 if config["request_gpu"] else 0
     output:
@@ -436,9 +436,9 @@ rule metabat2:
     conda:
         "envs/metabat2.yaml"
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 32*1024*attempt),
         runtime = lambda wildcards, attempt: 12*60*attempt,
     log:
         "logs/metabat2.log"
@@ -467,7 +467,7 @@ rule metabat_spec:
     benchmark:
         "benchmarks/metabat_spec.benchmark.txt"
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 24*60*attempt,
@@ -493,7 +493,7 @@ rule metabat_sspec:
     benchmark:
         "benchmarks/metabat_sspec.benchmark.txt"
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 24*60*attempt,
@@ -519,7 +519,7 @@ rule metabat_sens:
     benchmark:
         "benchmarks/metabat_sens.benchmark.txt"
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 24*60*attempt,
@@ -545,7 +545,7 @@ rule metabat_ssens:
     benchmark:
         "benchmarks/metabat_ssens.benchmark.txt"
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 24*60*attempt,
@@ -571,7 +571,7 @@ rule rosella:
     conda:
         "envs/rosella.yaml"
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 24)
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 24*60*attempt,
@@ -877,9 +877,9 @@ rule das_tool:
         vamb_done = [] if "vamb" in config["skip_binners"] else "data/vamb_bins/done",
         taxvamb_done = [] if "taxvamb" in config["skip_binners"] else "data/taxvamb_bins/done",
     threads:
-        config["max_threads"]
+        min(config["max_threads"], 10)
     resources:
-        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 512*1024*attempt),
+        mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
         runtime = lambda wildcards, attempt: 12*60*attempt,
     output:
         touch("data/das_tool_bins_pre_refine/done")
