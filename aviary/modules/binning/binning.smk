@@ -357,7 +357,7 @@ rule metabuli_taxonomy:
         config["max_threads"]
     resources:
         mem_mb = lambda wildcards, attempt: min(int(config["max_memory"])*1024, 128*1024*attempt),
-        mem_gb = lambda wildcards, attempt: min(int(config["max_memory"]), 128*attempt),
+        mem_gib = lambda wildcards, attempt: min(int(config["max_memory"]), 128*attempt) * 0.931,
         runtime = lambda wildcards, attempt: 48*60*attempt,
     params:
         metabuli_db = config['metabuli_folder'],
@@ -372,7 +372,7 @@ rule metabuli_taxonomy:
         "mkdir -p data/metabuli_taxonomy && "
         "metabuli classify "
         "{input.fasta} {params.metabuli_db}/gtdb data/metabuli_taxonomy tax > {log} 2>&1 "
-        "--seq-mode 1 --threads {threads} --max-ram {resources.mem_gb} "
+        "--seq-mode 1 --threads {threads} --max-ram {resources.mem_gib} "
         "&& touch {output[0]}"
 
 rule convert_metabuli:
